@@ -15,6 +15,6 @@ if [ -z "$OS_TYPE" ] && [ -f "$HOME/.config/env.d/default.sh" ]; then
 fi
 
 # Load shared aliases (requires OS_TYPE to be set)
-if [ -f "$HOME/.dotfiles/shell.d/aliases.sh" ]; then
-  . "$HOME/.dotfiles/shell.d/aliases.sh"
+if [ -f "$(dirname "$(readlink -f "$HOME/.zshrc")")/../shell.d/aliases.sh" ] 2>/dev/null; then
+  . "$(dirname "$(readlink -f "$HOME/.zshrc")")/../shell.d/aliases.sh"
 fi

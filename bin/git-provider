@@ -6,7 +6,7 @@ set -e
 
 # Default providers configuration
 PROVIDERS_CONFIG="$HOME/.config/git-providers.conf"
-DOTFILES_DIR="$HOME/.dotfiles"
+DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 usage() {
   cat << EOF
@@ -398,7 +398,7 @@ SET_PRIMARY=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    setup|add-remote|push-all|pull-primary|sync|status|list|set-primary)
+    setup|add-remote|push-all|pull-primary|sync|status|list|set-primary|help)
       COMMAND="$1"
       shift
       ;;
@@ -407,7 +407,7 @@ while [ $# -gt 0 ]; do
     -n) REMOTE_NAME="$2"; shift 2 ;;
     -k) SSH_KEY="$2"; shift 2 ;;
     --primary) SET_PRIMARY=1; shift ;;
-    --help) usage; exit 0 ;;
+    -h|--help) usage; exit 0 ;;
     -*) echo "Unknown option: $1" >&2; usage; exit 1 ;;
     *) 
       if [ -z "$COMMAND" ]; then
@@ -459,7 +459,7 @@ case "$COMMAND" in
     fi
     set_primary "$PROVIDER"
     ;;
-  ""|--help)
+  help|""|--help)
     usage
     ;;
   *)

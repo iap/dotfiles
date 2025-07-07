@@ -38,7 +38,7 @@ set undofile
 set undodir=~/.cache/vim/undo//
 
 " Create backup directories if they don't exist
-silent !mkdir -p ~/.cache/vim/{backup,swap,undo}
+silent !mkdir -p $HOME/.cache/vim/{backup,swap,undo}
 
 " Security
 set modelines=0

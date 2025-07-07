@@ -2,8 +2,8 @@
 # Minimal, secure, and cross-platform setup
 
 # Load environment configuration
-if [ -f "$HOME/.dotfiles/shell.d/env.sh" ]; then
-  source "$HOME/.dotfiles/shell.d/env.sh"
+if [ -f "$(dirname "$(readlink -f "$HOME/.zshrc")")/../shell.d/env.sh" ] 2>/dev/null; then
+  source "$(dirname "$(readlink -f "$HOME/.zshrc")")/../shell.d/env.sh"
 fi
 
 # Zsh options

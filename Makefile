@@ -73,40 +73,36 @@ link-dotfiles:
 	@mkdir -p "$(HOME)/.logs" "$(HOME)/.cache" "$(HOME)/Projects"
 	@mkdir -p "$(HOME)/.backup/system" "$(HOME)/.backup/projects" "$(HOME)/.backup/gpg" "$(HOME)/.backup/logs"
 	@chmod 700 "$(HOME)/.backup" "$(HOME)/.logs"
-	@ln -sf "$(HOME)/.dotfiles/config/env.d/default.sh" "$(HOME)/.config/env.d/default.sh"
-	@ln -sf "$(HOME)/.dotfiles/zshrc" "$(HOME)/.zshrc"
-	@ln -sf "$(HOME)/.dotfiles/bashrc" "$(HOME)/.bashrc"
-	@ln -sf "$(HOME)/.dotfiles/profile" "$(HOME)/.profile"
-	@ln -sf "$(HOME)/.dotfiles/vimrc" "$(HOME)/.vimrc"
-	@ln -sf "$(HOME)/.dotfiles/gitconfig" "$(HOME)/.gitconfig"
-	@ln -sf "$(HOME)/.dotfiles/gitignore_global" "$(HOME)/.gitignore_global"
+	@ln -sf "$(PWD)/config/env.d/default.sh" "$(HOME)/.config/env.d/default.sh"
+	@ln -sf "$(PWD)/zshrc" "$(HOME)/.zshrc"
+	@ln -sf "$(PWD)/bashrc" "$(HOME)/.bashrc"
+	@ln -sf "$(PWD)/profile" "$(HOME)/.profile"
+	@ln -sf "$(PWD)/vimrc" "$(HOME)/.vimrc"
+	@ln -sf "$(PWD)/gitconfig" "$(HOME)/.gitconfig"
+	@ln -sf "$(PWD)/gitignore_global" "$(HOME)/.gitignore_global"
 	@git config --global core.excludesfile "$(HOME)/.gitignore_global" 2>/dev/null || true
-	@ln -sf "$(HOME)/.dotfiles/hushlogin" "$(HOME)/.hushlogin"
+	@ln -sf "$(PWD)/hushlogin" "$(HOME)/.hushlogin"
 	@echo "Linking GPG configuration..."
 	@mkdir -p "$(HOME)/.gnupg"
 	@chmod 700 "$(HOME)/.gnupg"
-	@ln -sf "$(HOME)/.dotfiles/gnupg/gpg.conf" "$(HOME)/.gnupg/gpg.conf"
-	@cp "$(HOME)/.dotfiles/gnupg/gpg-agent.conf" "$(HOME)/.gnupg/gpg-agent.conf"
-	@if ! grep -q "pinentry-program $(HOME)/bin/pinentry-fallback" "$(HOME)/.gnupg/gpg-agent.conf" 2>/dev/null; then \
-		grep -v "pinentry-program" "$(HOME)/.gnupg/gpg-agent.conf" > "$(HOME)/.gnupg/gpg-agent.conf.tmp" 2>/dev/null || true; \
-		mv "$(HOME)/.gnupg/gpg-agent.conf.tmp" "$(HOME)/.gnupg/gpg-agent.conf" 2>/dev/null || true; \
-		echo "pinentry-program $(HOME)/bin/pinentry-fallback" >> "$(HOME)/.gnupg/gpg-agent.conf"; \
-	fi
+	@ln -sf "$(PWD)/gnupg/gpg.conf" "$(HOME)/.gnupg/gpg.conf"
+	@cp "$(PWD)/gnupg/gpg-agent.conf" "$(HOME)/.gnupg/gpg-agent.conf"
+	@# gpg-agent.conf is copied from dotfiles and already contains correct pinentry path
 	@chmod 600 "$(HOME)/.gnupg/gpg.conf" "$(HOME)/.gnupg/gpg-agent.conf"
 	@echo "Linking SSH configuration..."
 	@mkdir -p "$(HOME)/.ssh"
 	@chmod 700 "$(HOME)/.ssh"
-	@ln -sf "$(HOME)/.dotfiles/ssh/config" "$(HOME)/.ssh/config"
+	@ln -sf "$(PWD)/ssh/config" "$(HOME)/.ssh/config"
 	@chmod 600 "$(HOME)/.ssh/config"
 	@touch "$(HOME)/.ssh/known_hosts" "$(HOME)/.ssh/known_hosts_local"
 	@chmod 600 "$(HOME)/.ssh/known_hosts" "$(HOME)/.ssh/known_hosts_local"
 	@echo "Linking bin scripts..."
 	@mkdir -p "$(HOME)/bin"
-	@ln -sf "$(HOME)/.dotfiles/bin/pinentry-fallback" "$(HOME)/bin/pinentry-fallback"
-	@ln -sf "$(HOME)/.dotfiles/bin/ssh-keygen-secure" "$(HOME)/bin/ssh-keygen-secure"
-	@ln -sf "$(HOME)/.dotfiles/bin/git-provider" "$(HOME)/bin/git-provider"
-	@ln -sf "$(HOME)/.dotfiles/bin/gpg-setup" "$(HOME)/bin/gpg-setup"
-	@ln -sf "$(HOME)/.dotfiles/bin/gpg-ssh" "$(HOME)/bin/gpg-ssh"
+	@ln -sf "$(PWD)/bin/pinentry-fallback" "$(HOME)/bin/pinentry-fallback"
+	@ln -sf "$(PWD)/bin/ssh-keygen-secure" "$(HOME)/bin/ssh-keygen-secure"
+	@ln -sf "$(PWD)/bin/git-provider" "$(HOME)/bin/git-provider"
+	@ln -sf "$(PWD)/bin/gpg-setup" "$(HOME)/bin/gpg-setup"
+	@ln -sf "$(PWD)/bin/gpg-ssh" "$(HOME)/bin/gpg-ssh"
 	@chmod +x "$(HOME)/bin/pinentry-fallback" "$(HOME)/bin/ssh-keygen-secure" "$(HOME)/bin/gpg-setup" "$(HOME)/bin/git-provider" "$(HOME)/bin/gpg-ssh"
 	@echo "Dotfiles linked successfully"
 
@@ -121,7 +117,7 @@ clean-cache:
 backup:
 	@echo "Creating backup..."
 	@mkdir -p "$(HOME)/.backup/system"
-	@cp -r "$(HOME)/.dotfiles" "$(HOME)/.backup/system/" 2>/dev/null || true
+	@cp -r "$(PWD)" "$(HOME)/.backup/system/dotfiles" 2>/dev/null || true
 	@test -f "$(HOME)/.zsh_history" && cp "$(HOME)/.zsh_history" "$(HOME)/.backup/system/" || true
 	@echo "Backup created in $(HOME)/.backup/system/"
 
@@ -129,19 +125,19 @@ backup:
 setup-templates:
 	@echo "Setting up local configuration templates..."
 	@if [ ! -f "$(HOME)/.gitconfig.local" ]; then \
-		cp "$(HOME)/.dotfiles/template/gitconfig.local" "$(HOME)/.gitconfig.local"; \
+		cp "$(PWD)/template/gitconfig.local" "$(HOME)/.gitconfig.local"; \
 		echo "Created ~/.gitconfig.local from template"; \
 	else \
 		echo "~/.gitconfig.local already exists"; \
 	fi
 	@if [ ! -f "$(HOME)/.ssh/config.local" ]; then \
-		cp "$(HOME)/.dotfiles/template/config.local" "$(HOME)/.ssh/config.local"; \
+		cp "$(PWD)/template/config.local" "$(HOME)/.ssh/config.local"; \
 		echo "Created ~/.ssh/config.local from template"; \
 	else \
 		echo "~/.ssh/config.local already exists"; \
 	fi
 	@if [ ! -f "$(HOME)/.forward.local" ]; then \
-		cp "$(HOME)/.dotfiles/template/forward.local" "$(HOME)/.forward.local"; \
+		cp "$(PWD)/template/forward.local" "$(HOME)/.forward.local"; \
 		echo "Created ~/.forward.local from template"; \
 	else \
 		echo "~/.forward.local already exists"; \
