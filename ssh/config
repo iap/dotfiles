@@ -1,0 +1,101 @@
+# SSH client configuration
+# Secure defaults and host management
+# Last updated: 2025-07-07
+#
+# DUAL KNOWN_HOSTS STRATEGY:
+# - ~/.ssh/known_hosts_local : Development/local hosts (relaxed security)
+# - ~/.ssh/known_hosts       : Production/remote hosts (strict security)
+# This separation prevents local dev hostnames from leaking to production logs
+# and provides attack surface isolation.
+#
+# ADDING NEW HOSTS:
+# - Add specific host configurations to ~/.ssh/config.local
+# - Git providers (github.com, gitlab.com) need Port 22, User git
+# - Use StrictHostKeyChecking accept-new for trusted services
+# - Keep this main config file unchanged for security consistency
+
+# Include local machine-specific configurations
+Include config.local
+
+# === LOCALHOST & DEVELOPMENT ===
+# Only for verified local development
+Host localhost 127.0.0.1
+    HostName localhost
+    User %r
+    Port 22
+    StrictHostKeyChecking accept-new    # Better than 'no'
+    UserKnownHostsFile ~/.ssh/known_hosts_local
+    LogLevel ERROR
+    # macOS specific
+    AddKeysToAgent yes
+    UseKeychain yes
+
+# === LOCAL NETWORK (.local domains) ===
+# Security-aware: verify but allow new hosts
+Host *.local
+    Port 22
+    StrictHostKeyChecking accept-new    # Accept new, reject changed
+    UserKnownHostsFile ~/.ssh/known_hosts_local
+    CheckHostIP yes                     # Extra verification
+    LogLevel INFO                       # Log for audit trail
+    # macOS specific
+    AddKeysToAgent yes
+    UseKeychain yes
+
+# === PRODUCTION & REMOTE SERVERS ===
+# High security for external connections - DEFAULT PORT 443
+Host * !localhost !127.0.0.1 !*.local
+    # Connection security - Use HTTPS port for compatibility
+    Port 443                           # Default to secure port 443
+    Protocol 2                         # SSH2 only
+    AddressFamily any
+    
+    # Strict security defaults
+    StrictHostKeyChecking yes           # Always verify known hosts
+    HashKnownHosts yes                  # Protect against host enumeration
+    CheckHostIP yes                     # Verify IP consistency
+    VerifyHostKeyDNS yes               # Use DNS for extra verification
+    
+    # Authentication - macOS specific
+    PubkeyAuthentication yes
+    PasswordAuthentication no
+    ChallengeResponseAuthentication no
+    GSSAPIAuthentication no
+    AddKeysToAgent yes
+    UseKeychain yes
+    IdentitiesOnly yes
+    
+    # Disable dangerous features
+    ForwardAgent no                    # Never forward auth to untrusted hosts
+    ForwardX11 no                      # Disable X11 forwarding
+    ForwardX11Trusted no
+    PermitLocalCommand no              # Disable local command execution
+    
+    # Modern cryptography (2024+ standards)
+    PubkeyAcceptedAlgorithms rsa-sha2-512,rsa-sha2-256,ssh-ed25519
+    HostKeyAlgorithms rsa-sha2-512,rsa-sha2-256,ssh-ed25519
+    KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group16-sha512
+    Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com
+    MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com
+    
+    # Connection optimization
+    Compression yes
+    TCPKeepAlive yes
+    ServerAliveInterval 60             # Keep connections alive
+    ServerAliveCountMax 3
+    ConnectionAttempts 2
+    ConnectTimeout 10
+    
+    # Connection multiplexing (safe on multi-user systems)
+    ControlMaster auto
+    ControlPath ~/.ssh/control-%r@%h:%p
+    ControlPersist 5m
+    
+    # Security enhancements
+    ExitOnForwardFailure yes
+    ClearAllForwardings yes
+    VisualHostKey yes                  # Visual fingerprint verification
+    
+    # Logging
+    LogLevel INFO
+    SyslogFacility USER
