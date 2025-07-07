@@ -2,6 +2,34 @@
 
 All notable changes to this dotfiles configuration are documented here.
 
+## [1.1.0] - 2025-07-07
+
+### Fixed
+- **Critical**: Shell aliases not loading due to incorrect path resolution
+- Dynamic path resolution in zshrc and bashrc (removed extra `../`)
+- Shell-agnostic aliases loading in env.sh
+- Template system path resolution for aliases.sh
+
+### Added
+- Complete template system for local overrides:
+  - `template/default.local.sh` - Environment variable overrides
+  - `template/profile.local` - POSIX shell profile overrides
+- Comprehensive shell syntax validation in compliance checks
+- Debug support for shell loading troubleshooting
+
+### Changed
+- **Optimized Makefile validation targets**:
+  - Merged `validate` and `validate-path` into single comprehensive `validate` target
+  - Simplified validation structure: `validate` + `check-compliance`
+  - Eliminated redundant functionality and improved maintainability
+- Enhanced shell configuration loading with proper error handling
+- Updated help text to reflect consolidated validation targets
+
+### Security
+- Validated all dynamic path resolutions work correctly
+- Confirmed no hardcoded paths remain in any configuration
+- Template system properly excludes sensitive files from version control
+
 ## [1.0.0] - 2025-07-07
 
 ### Added

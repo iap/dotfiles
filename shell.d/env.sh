@@ -15,6 +15,19 @@ if [ -z "$OS_TYPE" ] && [ -f "$HOME/.config/env.d/default.sh" ]; then
 fi
 
 # Load shared aliases (requires OS_TYPE to be set)
-if [ -f "$(dirname "$(readlink -f "$HOME/.zshrc")")/../shell.d/aliases.sh" ] 2>/dev/null; then
-  . "$(dirname "$(readlink -f "$HOME/.zshrc")")/../shell.d/aliases.sh"
+# Use shell-agnostic method to find dotfiles directory
+if [ -n "$ZSH_VERSION" ]; then
+  # Running in zsh
+  SHELL_CONFIG="$HOME/.zshrc"
+elif [ -n "$BASH_VERSION" ]; then
+  # Running in bash
+  SHELL_CONFIG="$HOME/.bashrc"
+else
+  # Fallback for other POSIX shells
+  SHELL_CONFIG="$HOME/.profile"
+fi
+
+ALIASES_PATH="$(dirname "$(readlink -f "$SHELL_CONFIG")")/shell.d/aliases.sh"
+if [ -f "$ALIASES_PATH" ]; then
+  . "$ALIASES_PATH"
 fi

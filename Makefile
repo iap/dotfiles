@@ -1,18 +1,19 @@
 # Dotfiles Makefile
 # Minimal POSIX-compatible development environment management
 
-.PHONY: bootstrap validate link-dotfiles clean-cache backup setup-templates auto-cleanup help
+.PHONY: bootstrap validate link-dotfiles clean-cache backup setup-templates auto-cleanup check-compliance help
 
 # Default target
 help:
 	@echo "Available targets:"
 	@echo "  bootstrap      - Setup complete environment"
-	@echo "  validate       - Check system configuration"
+	@echo "  validate       - Comprehensive system and path validation"
 	@echo "  link-dotfiles  - Create symbolic links"
 	@echo "  clean-cache    - Clear cache directory"
 	@echo "  backup         - Backup essential files"
 	@echo "  setup-templates - Setup local configuration templates"
 	@echo "  auto-cleanup   - Clean old logs and backups (7+ days)"
+	@echo "  check-compliance - Full system compliance check"
 
 # Full environment setup
 bootstrap: link-dotfiles setup-templates validate clean-cache auto-cleanup
@@ -24,9 +25,9 @@ bootstrap: link-dotfiles setup-templates validate clean-cache auto-cleanup
 	@echo "  ~/.ssh/config.local - SSH host configurations"
 	@echo "  ~/.forward.local    - Email forwarding addresses"
 
-# Validate system configuration
+# Comprehensive system validation
 validate:
-	@echo "Validating system configuration..."
+	@echo "Validating system configuration and paths..."
 	@test -d "$(HOME)" || (echo "ERROR: HOME directory not found"; exit 1)
 	@if [ "$$(uname)" = "Darwin" ]; then \
 		test "$$(stat -f '%p' $(HOME) 2>/dev/null | tail -c 4)" = "711" || echo "WARNING: HOME permissions should be 711"; \
@@ -61,6 +62,19 @@ validate:
 		fi; \
 	fi
 	@test -f "$(HOME)/.ssh/config" || echo "WARNING: SSH config not found"
+	@echo "Checking for hardcoded paths..."
+	@! grep -r "/Users/" . --exclude-dir=.git --exclude="README.md" --exclude="Makefile" || (echo "[ERROR] Hardcoded user paths found"; exit 1)
+	@! grep -r "/home/" . --exclude-dir=.git --exclude="README.md" --exclude="Makefile" || (echo "[ERROR] Hardcoded home paths found"; exit 1)
+	@! grep -r "\.dotfiles" . --exclude-dir=.git --exclude="README.md" --exclude="*.md" --exclude="Makefile" || (echo "[ERROR] Hardcoded .dotfiles references found"; exit 1)
+	@echo "[OK] No hardcoded paths found"
+	@echo "Checking dynamic path resolution..."
+	@grep -q "\$$(PWD)" Makefile && echo "[OK] Makefile uses dynamic paths" || (echo "[ERROR] Makefile should use \$$(PWD)"; exit 1)
+	@grep -q "%h" gnupg/gpg-agent.conf && echo "[OK] GPG config uses placeholder" || (echo "[ERROR] GPG config should use %h placeholder"; exit 1)
+	@echo "Checking security settings..."
+	@grep -q "umask 077" config/env.d/default.sh && echo "[OK] Secure umask configured" || (echo "[ERROR] umask 077 required"; exit 1)
+	@grep -q "PATH.*sed.*\\.(:|$)" config/env.d/default.sh && echo "[OK] PATH hardening configured" || (echo "[ERROR] PATH hardening required"; exit 1)
+	@echo "Checking logging standards..."
+	@grep -q "log()" config/env.d/default.sh && echo "[OK] Logging function available" || (echo "[ERROR] log() function required"; exit 1)
 	@echo "System validation complete"
 
 # Create symbolic links for dotfiles
@@ -142,6 +156,18 @@ setup-templates:
 	else \
 		echo "~/.forward.local already exists"; \
 	fi
+	@if [ ! -f "$(HOME)/.config/env.d/default.local.sh" ]; then \
+		cp "$(PWD)/template/default.local.sh" "$(HOME)/.config/env.d/default.local.sh"; \
+		echo "Created ~/.config/env.d/default.local.sh from template"; \
+	else \
+		echo "~/.config/env.d/default.local.sh already exists"; \
+	fi
+	@if [ ! -f "$(HOME)/.profile.local" ]; then \
+		cp "$(PWD)/template/profile.local" "$(HOME)/.profile.local"; \
+		echo "Created ~/.profile.local from template"; \
+	else \
+		echo "~/.profile.local already exists"; \
+	fi
 	@ln -sf "$(HOME)/.forward.local" "$(HOME)/.forward"
 	@echo "Local configuration templates setup complete"
 
@@ -151,4 +177,24 @@ auto-cleanup:
 	@find "$(HOME)/.logs" -type f -mtime +7 -exec rm -f {} \; 2>/dev/null || true
 	@find "$(HOME)/.backup/logs" -type f -mtime +7 -exec rm -f {} \; 2>/dev/null || true
 	@echo "Auto-cleanup complete"
+
+
+# Full system compliance check
+check-compliance: validate
+	@echo "Performing full system compliance check..."
+	@echo "Checking shell syntax..."
+	@zsh -n zshrc && echo "[OK] zshrc syntax OK" || (echo "[ERROR] zshrc syntax error"; exit 1)
+	@bash -n bashrc && echo "[OK] bashrc syntax OK" || (echo "[ERROR] bashrc syntax error"; exit 1)
+	@sh -n profile && echo "[OK] profile syntax OK" || (echo "[ERROR] profile syntax error"; exit 1)
+	@echo "Checking script standards..."
+	@for script in bin/*; do \
+		if [ -f "$$script" ]; then \
+			head -1 "$$script" | grep -q "#!/bin/sh" && echo "[OK] $$script uses POSIX shell" || echo "[WARNING] $$script may not be POSIX compatible"; \
+			grep -q "usage()" "$$script" && echo "[OK] $$script has usage function" || echo "[WARNING] $$script missing usage function"; \
+		fi; \
+	done
+	@echo "Checking template system..."
+	@test -d template && echo "[OK] Template directory exists" || (echo "[ERROR] template/ directory required"; exit 1)
+	@test -f template/gitconfig.local && echo "[OK] Git template exists" || (echo "[ERROR] gitconfig.local template required"; exit 1)
+	@echo "[OK] Full compliance check complete"
 

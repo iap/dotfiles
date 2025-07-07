@@ -3,8 +3,8 @@
 # Optional alternative to zsh
 
 # Load environment configuration
-if [ -f "$(dirname "$(readlink -f "$HOME/.bashrc")")/../shell.d/env.sh" ] 2>/dev/null; then
-  source "$(dirname "$(readlink -f "$HOME/.bashrc")")/../shell.d/env.sh"
+if [ -f "$(dirname "$(readlink -f "$HOME/.bashrc")")/shell.d/env.sh" ] 2>/dev/null; then
+  source "$(dirname "$(readlink -f "$HOME/.bashrc")")/shell.d/env.sh"
 fi
 
 # Bash-specific options
