@@ -1,0 +1,36 @@
+# SSH local configuration template
+# Copy this file to ~/.ssh/config.local and customize with your hosts
+# This file is automatically included by the main SSH config
+
+# Example host configurations (uncomment and modify as needed)
+
+# Host server
+#     HostName server.example.tld
+#     User username
+#     Port 22
+#     IdentityFile ~/.ssh/id_ed25519
+#     LocalForward 8080 localhost:80
+
+# Host jumpbox
+#     HostName jump.example.tld
+#     User admin
+#     Port 2222
+#     IdentityFile ~/.ssh/id_rsa
+
+# Host internal
+#     HostName internal.example.tld
+#     User developer
+#     ProxyJump jumpbox
+#     IdentityFile ~/.ssh/id_ed25519
+
+# Host git-provider
+#     HostName git.example.tld
+#     User git
+#     Port 22
+#     IdentityFile ~/.ssh/id_ed25519
+
+# Host backup-server
+#     HostName backup.example.tld
+#     User backup
+#     Port 443
+#     IdentityFile ~/.ssh/id_ed25519
